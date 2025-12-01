@@ -64,7 +64,7 @@ setInterval(cycleShips, 12000);
 cycleShips();
 
 /* ---------------- ЧАТ ---------------- */
-const apiUrl = "https://faq-bot-37go.onrender.com/chat/";
+const apiUrl = "https://faq-bot-production.up.railway.app/chat";
 const messagesEl = document.getElementById("messages");
 const qInput = document.getElementById("q");
 
