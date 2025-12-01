@@ -2,101 +2,44 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>FAQ Chatbot</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column;align-items:center;padding:20px;background:#f5f7fb}
-    .chat{width:100%;max-width:720px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);padding:16px}
-    .messages{height:400px;overflow:auto;border:1px solid #eee;padding:10px;border-radius:6px;margin-bottom:12px}
-    .msg{margin:8px 0}
-    .user{color:#0b63d4}
-    .bot{color:#333}
-    form{display:flex;gap:8px}
-    input[type="text"]{flex:1;padding:10px;border-radius:6px;border:1px solid #ccc}
-    button{padding:10px 14px;border-radius:6px;border:0;background:#0b63d4;color:#fff}
-    .source{font-size:12px;color:#666;margin-top:6px}
-  </style>
+
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <h1>FAQ Chatbot — УНІВЕРСИТЕТ</h1>
-  <div class="chat">
+
+<body class="dark">
+
+  <!-- ЗОРЯНЕ ТЛО -->
+  <svg id="stars"></svg>
+
+  <!-- Комети (перші 3, інші генерує JS) -->
+  <div class="comet" style="top:-20%; left:-30%; animation-delay:0s;"></div>
+  <div class="comet" style="top:-30%; left:-15%; animation-delay:2s;"></div>
+  <div class="comet" style="top:-10%; left:-25%; animation-delay:4s;"></div>
+
+  <!-- Кораблі -->
+  <img id="ship1" class="ship" src="nlo.png">
+  <img id="ship2" class="ship" src="rocket.png">
+
+  <!-- КНОПКА ТЕМИ -->
+  <div class="theme-toggle" id="themeIcon">🌙</div>
+
+  <!-- ЛОГО -->
+  <img src="logo.png" class="logo" alt="Logo">
+
+  <h1 style="text-align:center;margin-bottom:10px;">FAQ Chatbot — УНІВЕРСИТЕТ</h1>
+
+  <div class="chat-wrapper">
     <div class="messages" id="messages"></div>
+
     <form id="chatForm" onsubmit="return false;">
-      <input id="q" type="text" placeholder="Напишіть питання..." />
+      <input id="q" type="text" placeholder="Напишіть питання...">
       <button id="send">Надіслати</button>
     </form>
   </div>
 
-  <script>
-    const apiUrl = "https://faq-bot-37go.onrender.com/chat"; // змінити на URL бекенду при деплої
-    const messagesEl = document.getElementById("messages");
-    const qInput = document.getElementById("q");
-    const sendBtn = document.getElementById("send");
-
-    function addMessage(text, who="bot") {
-      const div = document.createElement("div");
-      div.className = "msg";
-      if (who==="user") div.innerHTML = `<div class="user"><strong>Ви:</strong> ${escapeHtml(text)}</div>`;
-      else div.innerHTML = `<div class="bot"><strong>Бот:</strong> ${escapeHtml(text)}</div>`;
-      messagesEl.appendChild(div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function addSources(sources) {
-      const div = document.createElement("div");
-      div.className = "source";
-      let html = "<strong>Джерела (схожі питання):</strong><ul>";
-      sources.forEach(s=>{
-        html += `<li><em>${escapeHtml(s.question)}</em> — ${escapeHtml(s.answer)} (score: ${s.score.toFixed(2)})</li>`;
-      });
-      html += "</ul>";
-      div.innerHTML = html;
-      messagesEl.appendChild(div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function escapeHtml(unsafe) {
-      return unsafe
-       .replaceAll("&", "&amp;")
-       .replaceAll("<", "&lt;")
-       .replaceAll(">", "&gt;")
-       .replaceAll('"', "&quot;")
-       .replaceAll("'", "&#039;");
-    }
-
-    async function sendQuestion() {
-      const q = qInput.value.trim();
-      if (!q) return;
-      addMessage(q, "user");
-      qInput.value = "";
-      addMessage("Працюю...", "bot");
-      try {
-        const resp = await fetch(apiUrl, {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({question: q})
-        });
-        const data = await resp.json();
-        // remove last "Працюю..." message
-        const msgs = messagesEl.getElementsByClassName("msg");
-        if (msgs.length) msgs[msgs.length-1].remove();
-
-        addMessage(data.reply, "bot");
-        if (data.sources && data.sources.length) addSources(data.sources);
-      } catch (e) {
-        // remove last "Працюю..."
-        const msgs = messagesEl.getElementsByClassName("msg");
-        if (msgs.length) msgs[msgs.length-1].remove();
-        addMessage("Помилка зв'язку з сервером. Перевірте, що бекенд запущено.", "bot");
-        console.error(e);
-      }
-    }
-
-    document.getElementById("chatForm").addEventListener("submit", sendQuestion);
-    sendBtn.addEventListener("click", sendQuestion);
-
-    // тестове привітання
-    addMessage("Привіт! Я чат-бот. Став запитання щодо вступу чи навчання.", "bot");
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
