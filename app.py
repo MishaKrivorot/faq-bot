@@ -6,7 +6,7 @@ import json
 from typing import List
 import numpy as np
 
-FAQ_PATH = "faqs_expanded.json"
+FAQ_PATH = "faqs.json"
 TOP_K = 3
 
 app = FastAPI(title="FAQ Chatbot API")
