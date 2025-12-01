@@ -3,4 +3,4 @@ uvicorn
 pydantic
 sentence-transformers
 numpy
-torch==2.0.1 --extra-index-url https://download.pytorch.org/whl/cpu
+
