@@ -10,7 +10,7 @@ from typing import List
 # НАЛАШТУВАННЯ
 # ----------------------------
 FAQ_PATH = "faqs.json"
-EMBEDDING_MODEL = "sentence-transformers/paraphrase-MiniLM-L3-v2"  # легша модель
+EMBEDDING_MODEL = "sentence-transformers/paraphrase-MiniLM-L3-v2"  # легка модель
 TOP_K = 3
 
 # ----------------------------
@@ -21,14 +21,14 @@ app = FastAPI(title="FAQ Chatbot API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_origin_regex=".*",
 )
 
 # ----------------------------
-# Pydantic Models
+# МОДЕЛІ ДАНИХ
 # ----------------------------
 class Query(BaseModel):
     question: str
@@ -51,7 +51,7 @@ faq_answers = None
 faq_embeddings = None
 
 def load_model_and_data():
-    """Lazy loading моделі + FAQ"""
+    """Lazy loading моделі та FAQ"""
     global model, faq_texts, faq_answers, faq_embeddings
 
     if model is None:
@@ -73,7 +73,7 @@ def load_model_and_data():
     return model, faq_texts, faq_answers, faq_embeddings
 
 # ----------------------------
-# ПОШУК
+# ПОШУК FAQ
 # ----------------------------
 def find_best_answers(question: str, top_k: int = TOP_K):
     model, faq_texts, faq_answers, faq_embeddings = load_model_and_data()
@@ -84,30 +84,31 @@ def find_best_answers(question: str, top_k: int = TOP_K):
     results = []
     for h in hits:
         idx = h["corpus_id"]
-        score = float(h["score"])
         results.append({
             "question": faq_texts[idx],
             "answer": faq_answers[idx],
-            "score": score
+            "score": float(h["score"])
         })
+
     return results
 
 # ----------------------------
-# РЕАКЦІЯ НА ПРИВІТАННЯ
+# ПРОСТІ ВІДПОВІДІ НА ПРИВІТАННЯ
 # ----------------------------
 GREETINGS = ["привіт", "доброго", "добрий", "hello", "hi", "здрастуйте"]
 
 def simple_fallback(q: str):
-    ql = q.lower()
+    q = q.lower()
     for g in GREETINGS:
-        if g in ql:
+        if g in q:
             return "Привіт! Я бот-помічник. Запитайте мене щось про вступ або навчання!"
     return None
 
 # ----------------------------
-# API ENDPOINT
+# ГОЛОВНИЙ ENDPOINT
 # ----------------------------
 @app.post("/chat", response_model=ChatResponse)
+@app.post("/chat/", response_model=ChatResponse)   # ← важливо! виправляє POST redirect
 def chat(query: Query):
     q = query.question.strip()
     if not q:
@@ -118,33 +119,32 @@ def chat(query: Query):
     if fb:
         return ChatResponse(reply=fb, sources=[])
 
-    # Основний пошук
+    # Семантичний пошук
     results = find_best_answers(q, top_k=TOP_K)
     top = results[0]
 
+    # Поріг впевненості
     if top["score"] >= 0.45:
         reply = top["answer"]
     else:
         reply = (
-            "Вибач, я не зовсім впевнений. Але ось можливі варіанти:\n\n"
+            "Я не повністю впевнений у відповіді, але ось можливо корисні варіанти:\n\n"
             f"1) {results[0]['answer']}\n"
             f"2) {results[1]['answer'] if len(results) > 1 else ''}"
         )
 
     sources = [AnswerItem(**r) for r in results]
-
     return ChatResponse(reply=reply, sources=sources)
 
 # ----------------------------
-# Health Check
+# HEALTHCHECK
 # ----------------------------
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 # ----------------------------
-# Local Run
+# ЛОКАЛЬНИЙ ЗАПУСК
 # ----------------------------
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
