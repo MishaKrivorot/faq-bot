@@ -101,7 +101,12 @@ async function sendQuestion() {
   }
 }
 
-document.getElementById("send").onclick = sendQuestion;
-document.getElementById("chatForm").onsubmit = sendQuestion;
+document.getElementById("send").addEventListener("click", sendQuestion);
+
+document.getElementById("chatForm").addEventListener("submit", function(e){
+    e.preventDefault();      // ← блокуємо оновлення
+    sendQuestion();
+});
+
 
 addMessage("Привіт! Я чат-бот. Став запитання щодо вступу чи навчання.");
