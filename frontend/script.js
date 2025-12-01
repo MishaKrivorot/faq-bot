@@ -19,10 +19,27 @@ drawStars();
 document.getElementById("themeIcon").onclick = () => {
   document.body.classList.toggle("dark");
   document.body.classList.toggle("light");
+
+  applyShipTheme();
   drawStars();
+
   document.getElementById("themeIcon").textContent =
     document.body.classList.contains("dark") ? "🌙" : "☀️";
 };
+
+/* ---------------- ІНВЕРСІЯ КОРАБЛІВ ---------------- */
+const ship1 = document.getElementById("ship1");
+const ship2 = document.getElementById("ship2");
+
+function applyShipTheme() {
+  const dark = document.body.classList.contains("dark");
+
+  ship1.src = dark ? "nlo-invert.png" : "nlo.png";
+  ship2.src = dark ? "rocket-invert.png" : "rocket.png";
+}
+
+/* запуск при завантаженні */
+applyShipTheme();
 
 /* ---------------- ВИПАДКОВІ КОМЕТИ ---------------- */
 function spawnComet() {
@@ -42,13 +59,9 @@ function spawnComet() {
 setInterval(spawnComet, 2500);
 
 /* ---------------- КОРАБЛІ ---------------- */
-const ships = [
-  document.getElementById("ship1"),
-  document.getElementById("ship2")
-];
+const ships = [ship1, ship2];
 
 let currentShip = 0;
-
 function cycleShips() {
   ships.forEach(s => s.style.display = "none");
 
@@ -104,9 +117,8 @@ async function sendQuestion() {
 document.getElementById("send").addEventListener("click", sendQuestion);
 
 document.getElementById("chatForm").addEventListener("submit", function(e){
-    e.preventDefault();      // ← блокуємо оновлення
+    e.preventDefault();
     sendQuestion();
 });
-
 
 addMessage("Привіт! Я чат-бот. Став запитання щодо вступу чи навчання.");
